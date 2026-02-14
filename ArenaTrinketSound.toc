@@ -1,9 +1,16 @@
 ## Interface: 120000
-## Title: Arena Trinket Sound
+## Title: |cffff0000Arena|r Trinket Sound
 ## Notes: Plays a sound when enemy in Arena uses PvP trinket
 ## Author: drmlol
-## Version: 1.0
+## Version: 2.0
 ## Category: PvP
 ## IconTexture: 1322720
+## SavedVariables: ArenaTrinketSoundDB
+## LoadSavedVariablesFirst: true
+## AddonCompartmentFunc:OpenArenaTrinketSoundOptionsPanel
+## X-Curse-Project-ID: 1458507
 
+ArenaTrinketSoundDBUtils.lua
+ArenaTrinketSoundSystem.lua
+ArenaTrinketSoundOptions.lua
 ArenaTrinketSound.lua

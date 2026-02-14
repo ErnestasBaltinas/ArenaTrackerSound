@@ -8,11 +8,21 @@
 
 🔊 **Trinket Alerts**
 
-- Plays a **different sound depending on the enemy role**:
-  - **Healer** – "Healer Trinketed" sound
-  - **DPS** – "DPS Trinketed" sound
+- Plays a sound when an enemy uses their PvP trinket.
+- Sound type can be configured by:
+  - **Role** – Healer Trinketed, DPS Trinketed, Tank Trinketed.
+  - **Class** – Warrior Trinketed, Priest Trinketed, DK Trinketed, etc.
+  - **Spec** – Arms Trinketed, Resto Druid Trinketed, Unholy Trinketed, etc.
 - Works in **all PvP arena instances**: regular arena, skirmish, and solo shuffle.
-- Designed with **modern Blizzard API**, fully compatible with **Midnight**.
+
+🎚️ **Sound Channel Selection**
+
+- You can choose which audio channel the alert uses:
+  - **Master**
+  - **Music**
+  - **SFX (Sound Effects)**
+  - **Ambience**
+  - **Dialog**
 
 🧠 **Reliable detection**
 

@@ -1,7 +1,17 @@
-local ADDON_NAME = ...
+local ADDON_NAME, addon = ...
+local DBUtils = addon.DBUtils
+local SoundSystem = addon.SoundSystem
 
-local SOUND_PATH = "Interface\\AddOns\\" .. ADDON_NAME .. "\\sounds\\"
+
 local lastTrinketStartTimes = {}
+
+
+-- utils --
+
+local function getArenaIndex(unit)
+    return tonumber(string.match(unit, "^arena(%d+)$"))
+end
+
 
 local function isInPvPInstance()
     local _, instanceType = IsInInstance()
@@ -16,32 +26,57 @@ local function getUnitRole(unit)
     end
 
     -- Fallback to specialization-based role
-    local specID = GetSpecialization(nil, nil, nil, unit)
+    local index = getArenaIndex(unit)
+    local specID, _ = GetArenaOpponentSpec(index)
     if specID then
         local _, _, _, role = GetSpecializationInfoByID(specID)
         return role
     end
-
-    -- Fallback to class-based default role
-    local _, class = UnitClass(unit)
-    return GetDefaultRoleForClass(class)
+    return "NONE"
 end
 
-local function getSoundPath(unit)
-	
-	local soundFileName = 'trinket.ogg'
-	local role = getUnitRole(unit) -- "TANK", "HEALER", "DAMAGER", or "NONE"
-	if role == "HEALER" then
-		-- do nothing
-	elseif role == "DAMAGER" then
-		soundFileName = 'trinket2.ogg'
-	else
-		-- do nothing
-	end
-
-	return SOUND_PATH .. soundFileName;
+local function getUnitSpecName(unit)
+    local index = getArenaIndex(unit)
+    local specId, _ = GetArenaOpponentSpec(index)
+    local _, specName, _, _, _, _, _ = GetSpecializationInfoByID(specId)
+    return specName -- Balance
 end
 
+local function getUnitClassName(unit)
+    local _, _, classID = UnitClass(unit)
+    local _, classFile, _ = GetClassInfo(classID)
+    return classFile -- DRUID, DEAHTKNIGHT, etc.
+end
+
+
+local function getTypeAndUnitIdentity(unit)
+
+    local selectedType = DBUtils.getOptionValue("selectedSoundType")
+    local identity = nil
+
+    if selectedType == SoundSystem.SOUND_TYPE.ROLES then
+        identity = getUnitRole(unit)
+    elseif selectedType == SoundSystem.SOUND_TYPE.SPECS then
+        local spec = getUnitSpecName(unit)   -- e.g., "Restoration"
+        local class = getUnitClassName(unit) -- e.g., "Druid"
+
+        if spec and class then
+            identity = spec .. "_" .. class  -- e.g., "Restoration_Druid"
+        end
+    elseif selectedType == SoundSystem.SOUND_TYPE.CLASSES then
+        identity = getUnitClassName(unit)
+    end
+
+    -- Normalize once here
+    if identity then
+        identity = string.upper(identity)
+    end
+
+    return selectedType, identity
+end
+
+
+-- logic --
 local function OnArenaTrinketUpdate(unit)
     local spellId, startMs, durationMs = C_PvP.GetArenaCrowdControlInfo(unit)
     local start = startMs and startMs / 1000 or 0
@@ -49,18 +84,19 @@ local function OnArenaTrinketUpdate(unit)
 
 	if start == 0 then return end
 
-    --print('now - start: ', (now - start) < 10)
-
     if duration > 0  and (not lastTrinketStartTimes[unit] or lastTrinketStartTimes[unit] ~= start) then
 		-- Trinket just used
-        --print(unit .. "(".. spellId ..")" .. " used their PvP trinket! " )
-		PlaySoundFile(getSoundPath(unit), "Master")
+        local selectedType, identity = getTypeAndUnitIdentity(unit)
+        --print('Trinket used by ', unit, selectedType, identity)
+		SoundSystem.playTrinketSound(selectedType, identity)
 
         -- Mark as announced
         lastTrinketStartTimes[unit] = start
     end
 end
 
+
+-- EVENTS --
 local arenaTrinketTracker = CreateFrame("Frame", "ArenaTrinketSoundFrame")
 
 arenaTrinketTracker:SetScript("OnEvent", function(_, event, unit)
@@ -76,8 +112,7 @@ ZoneWatcher:RegisterEvent("PVP_MATCH_ACTIVE")
 ZoneWatcher:RegisterEvent("PVP_MATCH_COMPLETE")
 ZoneWatcher:RegisterEvent("ARENA_PREP_OPPONENT_SPECIALIZATIONS")
 
-ZoneWatcher:SetScript("OnEvent", function(_, event, ...)
-
+ZoneWatcher:SetScript("OnEvent", function(_, event, a, b)
 	if event == "ARENA_PREP_OPPONENT_SPECIALIZATIONS" then
         wipe(lastTrinketStartTimes)
         return
@@ -95,3 +130,5 @@ ZoneWatcher:SetScript("OnEvent", function(_, event, ...)
         wipe(lastTrinketStartTimes)
     end
 end)
+
+DBUtils.initSavedVars()
