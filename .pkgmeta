@@ -1,8 +1,6 @@
 package-as: ArenaTrinketSound
 
-manual-changelog:
-  filename: CHANGELOG.md
-  markup-type: markdown
+manual-changelog: CHANGELOG.md
 
 ignore:
 - CLAUDE.md
