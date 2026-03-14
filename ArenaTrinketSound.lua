@@ -125,8 +125,8 @@ local function OnArenaTrinketUpdate(unit)
     SoundSystem.playTrinketSound(selectedType, identity)
     if trinketInfo.spellId then
         local spellInfo = C_Spell.GetSpellInfo(trinketInfo.spellId)
-        print('Spell Name:', spellInfo and spellInfo.name or 'Unknown', 'Unit:',
-            unit, 'Spell ID:', trinketInfo.spellId)
+        -- print('Spell Name:', spellInfo and spellInfo.name or 'Unknown', 'Unit:',
+        --     unit, 'Spell ID:', trinketInfo.spellId)
     end
 end
 

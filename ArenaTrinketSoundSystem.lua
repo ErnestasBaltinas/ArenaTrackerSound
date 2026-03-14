@@ -4,19 +4,21 @@ local DBUtils = addon.DBUtils
 addon.SoundSystem = {}
 local SoundSystem = addon.SoundSystem
 local SOUND_PATH = "Interface\\AddOns\\" .. addonName .. "\\sounds\\"
-local DEFAULT_SOUND_PATH = SOUND_PATH .. "trinket_default.ogg"
+local DEFAULT_SOUND_PATH = SOUND_PATH .. "default\\trinket_default.ogg"
 
 SoundSystem.SOUND_TYPE = {
     ROLES   = "roles",
     SPECS   = "specs",
     CLASSES = "classes",
+    DEFAULT = "default",
 }
 
 SoundSystem.AVAILABLE_SOUND_TYPES = {
-    { "Roles",  SoundSystem.SOUND_TYPE.ROLES },
-    { "Specs",  SoundSystem.SOUND_TYPE.SPECS },
+    { "Default", SoundSystem.SOUND_TYPE.DEFAULT },
+    { "Roles",   SoundSystem.SOUND_TYPE.ROLES },
+    { "Specs",   SoundSystem.SOUND_TYPE.SPECS },
     { "Classes", SoundSystem.SOUND_TYPE.CLASSES },
-} 
+}
 
 SoundSystem.SOUND_CHANNEL = {
     MASTER   = "Master",
@@ -133,7 +135,9 @@ local SOUND_CHANNEL_CVAR = {
 }
 
 local function getSoundFileName(type, identity)
-    if type == SoundSystem.SOUND_TYPE.ROLES then
+    if type == SoundSystem.SOUND_TYPE.DEFAULT then
+        return "trinket_default"
+    elseif type == SoundSystem.SOUND_TYPE.ROLES then
          return SoundSystem.ROLES_SOUND_MAP[identity]
     elseif type == SoundSystem.SOUND_TYPE.SPECS then
          return SoundSystem.SPECS_SOUND_MAP[identity]
@@ -184,6 +188,12 @@ end
 function SoundSystem.playPreviewSound()
     local selectedType = DBUtils.getOptionValue("selectedSoundType")
     if not selectedType then return end
+
+    -- Default type has no per-identity variation
+    if selectedType == SoundSystem.SOUND_TYPE.DEFAULT then
+        SoundSystem.playTrinketSound(selectedType, nil)
+        return
+    end
 
     -- select the appropriate mapping table
     local mapping = nil

@@ -10,6 +10,7 @@
 
 - Plays a sound when an enemy uses their PvP trinket.
 - Sound type can be configured by:
+  - **Default** – One sound plays for every trinket, regardless of class or role.
   - **Role** – Healer Trinketed, DPS Trinketed, Tank Trinketed.
   - **Class** – Warrior Trinketed, Priest Trinketed, DK Trinketed, etc.
   - **Spec** – Arms Trinketed, Resto Druid Trinketed, Unholy Trinketed, etc.

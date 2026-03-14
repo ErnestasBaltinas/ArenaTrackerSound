@@ -1,6 +1,6 @@
 # ArenaTrinketSound
 
-A World of Warcraft addon that plays a sound whenever an enemy uses their PvP trinket in arenas (regular, skirmish, solo shuffle). Sound can be configured by role, class, or spec.
+A World of Warcraft addon that plays a sound whenever an enemy uses their PvP trinket in arenas (regular, skirmish, solo shuffle). Sound can be configured by default (one sound for all), role, class, or spec.
 
 - **Interface**: 120000 (retail / Midnight)
 - **SavedVariables**: `ArenaTrinketSoundDB`
@@ -17,6 +17,7 @@ A World of Warcraft addon that plays a sound whenever an enemy uses their PvP tr
 | `ArenaTrinketSoundSystem.lua` | Sound maps, `playTrinketSound`, `playPreviewSound`, channel checks |
 | `ArenaTrinketSoundOptions.lua` | Settings UI panel, slash command registration |
 | `ArenaTrinketSound.lua` | Main logic — event handling, trinket detection, sound dispatch |
+| `sounds/default/` | `trinket_default.ogg` — played when sound type is `Default` or as fallback |
 | `sounds/roles/` | `tank.ogg`, `healer.ogg`, `dps.ogg` |
 | `sounds/classes/` | One `.ogg` per class (e.g. `druid.ogg`, `deathknight.ogg`) |
 | `sounds/specs/` | One `.ogg` per spec (e.g. `restoration_druid.ogg`) |
@@ -97,4 +98,4 @@ Update `## Version` in `ArenaTrinketSound.toc` before tagging.
 1. Add the `.ogg` file to the correct `sounds/` subfolder.
 2. Add its key/filename entry to the appropriate map in `ArenaTrinketSoundSystem.lua` (`ROLES_SOUND_MAP`, `CLASS_SOUND_MAP`, or `SPECS_SOUND_MAP`).
 
-The sound system falls back to `sounds/trinket_default.ogg` if a file is missing or the mapping fails.
+The sound system falls back to `sounds/default/trinket_default.ogg` if a file is missing or the mapping fails.
