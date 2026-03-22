@@ -6,3 +6,4 @@ manual-changelog:
 
 ignore:
   - CLAUDE.md
+  - NOTES.md

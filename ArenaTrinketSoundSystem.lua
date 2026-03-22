@@ -168,7 +168,6 @@ function SoundSystem.playTrinketSound(type, identity)
     local soundFileName = getSoundFileName(type, identity)
     local soundPath = getSoundPath(type, soundFileName)
 
-    
     -- If mapping failed, use default
     if not soundPath then
         PlaySoundFile(DEFAULT_SOUND_PATH, selectedSoundChannel)

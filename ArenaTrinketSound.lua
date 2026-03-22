@@ -11,10 +11,6 @@ local function getArenaIndex(unit)
 end
 
 
-local function isInPvPInstance()
-    local _, instanceType = IsInInstance()
-    return instanceType == "arena"
-end
 
 local function getUnitRole(unit)
     -- Check group-assigned role first
@@ -80,6 +76,17 @@ local function getTypeAndUnitIdentity(unit)
 end
 
 
+-- debug --
+
+local function atsPrefix()
+    return "|cFFFFD700[ATS " .. date("%H:%M:%S") .. "]|r"
+end
+
+local function printTrinketUsed(unit, identity)
+    print(atsPrefix() .. " |cFFFF0000" .. tostring(identity) .. " (" .. unit .. ")|r |cFF00FF00Trinketed!|r |T1322720:16:16|t")
+end
+
+
 -- logic --
 
 local function getUnitTrinketCD(unit)
@@ -88,89 +95,55 @@ local function getUnitTrinketCD(unit)
     return cdInSeconds
 end
 
-local function getArenaTrinketInfo(unit)
-    local spellId, startMs, durationMs = C_PvP.GetArenaCrowdControlInfo(unit)
-    if not issecretvalue(startMs) or issecrettable(durationMs) then
-        -- No secret value means trinket is not on cooldown — nothing to do
-        return nil
-    end
-    return {
-        spellId = spellId,
-        startTime = GetTime(),
-        cdInSeconds = getUnitTrinketCD(unit),
-    }
+local function isTrinketOnCD(unit)
+    return trinketUsedAt[unit] ~= nil
 end
 
-local function isUnitTrinketUsed(unit)
-    if not trinketUsedAt[unit] then
-        return false
-    end
-    local cdInSeconds = getUnitTrinketCD(unit)
-    return GetTime() - trinketUsedAt[unit] < cdInSeconds
+local function markTrinketUsed(unit)
+    trinketUsedAt[unit] = GetTime()
 end
 
-local function OnArenaTrinketUpdate(unit)
-    local trinketInfo = getArenaTrinketInfo(unit)
+local function clearTrinketCD(unit)
+    trinketUsedAt[unit] = nil
+end
 
-    if not trinketInfo then
-        return -- trinket not on CD
-    end
+local function resetAllTrinkets()
+    wipe(trinketUsedAt)
+end
 
-    if isUnitTrinketUsed(unit) then
-        return
-    end
-
-    trinketUsedAt[unit] = trinketInfo.startTime
+local function OnArenaTrinketUsed(unit)
+    markTrinketUsed(unit)
     local selectedType, identity = getTypeAndUnitIdentity(unit)
+    printTrinketUsed(unit, identity)
     SoundSystem.playTrinketSound(selectedType, identity)
-    if trinketInfo.spellId then
-        local spellInfo = C_Spell.GetSpellInfo(trinketInfo.spellId)
-        -- print('Spell Name:', spellInfo and spellInfo.name or 'Unknown', 'Unit:',
-        --     unit, 'Spell ID:', trinketInfo.spellId)
-    end
 end
 
+
+-- HOOKS --
+
+local hookedSlots = {}
+
+local function setupTrinketHooks()
+    for i = 1, 5 do
+        if not hookedSlots[i] then
+            local arenaFrame = _G["CompactArenaFrameMember" .. i]
+            if arenaFrame and arenaFrame.CcRemoverFrame and arenaFrame.CcRemoverFrame.Cooldown then
+                local unit = "arena" .. i
+                hooksecurefunc(arenaFrame.CcRemoverFrame.Cooldown, "SetCooldown", function(_, start, duration)
+                    if isTrinketOnCD(unit) then return end
+                    OnArenaTrinketUsed(unit)
+                end)
+                arenaFrame.CcRemoverFrame.Cooldown:HookScript("OnCooldownDone", function()
+                    clearTrinketCD(unit)
+                end)
+                hookedSlots[i] = true
+            end
+        end
+    end
+end
 
 
 -- EVENTS --
-local function RequestAll()
-    for i = 1, GetNumArenaOpponentSpecs() do
-        local unit = "arena" .. i
-        if ArenaUtil.UnitExists(unit) then
-            C_PvP.RequestCrowdControlSpell(unit)
-        end
-    end
-end
-
-local function RefreshAll()
-    for i = 1, GetNumArenaOpponentSpecs() do
-        local unit = "arena" .. i
-        if ArenaUtil.UnitExists(unit) then
-            OnArenaTrinketUpdate(unit)
-        end
-    end
-end
-
-local arenaTrinketTracker = CreateFrame("Frame", "ArenaTrinketSoundFrame")
-arenaTrinketTracker:SetScript("OnEvent", function(_, _, unit)
-    if not unit or unit == "" then
-        RefreshAll()
-        return
-    end
-    if strmatch(unit, "^arena%d$") and ArenaUtil.UnitExists(unit) then
-        OnArenaTrinketUpdate(unit)
-    end
-end)
-
--- Listen for zone change to enable/disable tracking
-local function syncTrinketTracker()
-    if C_PvP.IsMatchConsideredArena() then
-        arenaTrinketTracker:RegisterEvent("ARENA_COOLDOWNS_UPDATE")
-    else
-        arenaTrinketTracker:UnregisterEvent("ARENA_COOLDOWNS_UPDATE")
-        wipe(trinketUsedAt)
-    end
-end
 
 local ZoneWatcher = CreateFrame("Frame")
 ZoneWatcher:RegisterEvent("PLAYER_ENTERING_WORLD")
@@ -179,24 +152,21 @@ ZoneWatcher:RegisterEvent("ARENA_PREP_OPPONENT_SPECIALIZATIONS")
 
 ZoneWatcher:SetScript("OnEvent", function(_, event)
     if event == "ARENA_PREP_OPPONENT_SPECIALIZATIONS" then
-        wipe(trinketUsedAt)
+        resetAllTrinkets()
+        setupTrinketHooks()
     elseif event == "PVP_MATCH_STATE_CHANGED" then
         local matchState = C_PvP.GetActiveMatchState()
         if matchState == Enum.PvPMatchState.StartUp then
             -- Pre-match lobby: gates not open, no trinkets used yet — clean slate
-            wipe(trinketUsedAt)
+            resetAllTrinkets()
         elseif matchState == Enum.PvPMatchState.Engaged then
-            -- Gates just opened — seed initial state in case trinket was used in prep
-            RequestAll()
-            RefreshAll()
+            -- Gates just opened
+            setupTrinketHooks()
         end
-        syncTrinketTracker()
     elseif event == "PLAYER_ENTERING_WORLD" then
-        syncTrinketTracker()
         if C_PvP.IsMatchConsideredArena() then
-            -- Reconnect/reload mid-arena — seed current state immediately
-            RequestAll()
-            RefreshAll()
+            -- Reconnect/reload mid-arena
+            setupTrinketHooks()
         end
     end
 end)

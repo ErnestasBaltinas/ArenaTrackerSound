@@ -1,3 +1,9 @@
+## Arena Trinket Sound release 2.3.0
+
+### Changes
+
+- Updated trinket detection to work with recent Blizzard API changes
+
 ## Arena Trinket Sound release 2.2.0
 
 ### Changes

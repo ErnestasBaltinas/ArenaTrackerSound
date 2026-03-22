@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:warcraft.wiki.gg)",
+      "WebSearch",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:us.forums.blizzard.com)"
+    ]
+  }
+}

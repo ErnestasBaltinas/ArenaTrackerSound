@@ -39,6 +39,11 @@ No global pollution except `OpenArenaTrinketSoundOptionsPanel` (required by `Add
 
 ---
 
+## Dev Notes
+See `NOTES.md` for findings and discoveries about WoW API behaviour.
+
+---
+
 ## Key APIs & Gotchas
 
 ### Trinket detection
