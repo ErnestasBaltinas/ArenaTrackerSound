@@ -1,3 +1,10 @@
+## Arena Trinket Sound release 2.4.0
+
+### Changes
+
+- Fixed sounds sometimes being cut off mid-play due to a double sound playback bug in the fallback logic
+- Sound channel now falls back to Master if no channel is configured
+
 ## Arena Trinket Sound release 2.3.0
 
 ### Changes

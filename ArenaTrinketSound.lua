@@ -83,7 +83,9 @@ local function atsPrefix()
 end
 
 local function printTrinketUsed(unit, identity)
-    print(atsPrefix() .. " |cFFFF0000" .. tostring(identity) .. " (" .. unit .. ")|r |cFF00FF00Trinketed!|r |T1322720:16:16|t")
+    local label = identity and (tostring(identity) .. " (" .. unit .. ")") or unit
+    print(atsPrefix() ..
+        " |cFFFF0000" .. label .. "|r |cFF00FF00Trinketed!|r |T1322720:16:16|t")
 end
 
 

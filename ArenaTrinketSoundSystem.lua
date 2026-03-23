@@ -5,6 +5,7 @@ addon.SoundSystem = {}
 local SoundSystem = addon.SoundSystem
 local SOUND_PATH = "Interface\\AddOns\\" .. addonName .. "\\sounds\\"
 local DEFAULT_SOUND_PATH = SOUND_PATH .. "default\\trinket_default.ogg"
+local DEFAULT_SOUND_CHANNEL = "Master"
 
 SoundSystem.SOUND_TYPE = {
     ROLES   = "roles",
@@ -29,33 +30,33 @@ SoundSystem.SOUND_CHANNEL = {
 }
 
 SoundSystem.AVAILABLE_SOUND_CHANNELS = {
-    { "Master",   SoundSystem.SOUND_CHANNEL.MASTER },
-    { "Music",    SoundSystem.SOUND_CHANNEL.MUSIC },
+    { "Master",        SoundSystem.SOUND_CHANNEL.MASTER },
+    { "Music",         SoundSystem.SOUND_CHANNEL.MUSIC },
     { "SFX (Effects)", SoundSystem.SOUND_CHANNEL.SFX },
-    { "Ambience", SoundSystem.SOUND_CHANNEL.AMBIENCE },
-    { "Dialog",   SoundSystem.SOUND_CHANNEL.DIALOG },
+    { "Ambience",      SoundSystem.SOUND_CHANNEL.AMBIENCE },
+    { "Dialog",        SoundSystem.SOUND_CHANNEL.DIALOG },
 }
 
 SoundSystem.ROLES_SOUND_MAP = {
-    TANK   = "tank",
-    HEALER = "healer",
+    TANK    = "tank",
+    HEALER  = "healer",
     DAMAGER = "dps",
 }
 
 SoundSystem.CLASS_SOUND_MAP = {
-    WARRIOR      = "warrior",
-    PALADIN      = "paladin",
-    HUNTER       = "hunter",
-    ROGUE        = "rogue",
-    PRIEST       = "priest",
-    DEATHKNIGHT  = "deathknight",
-    SHAMAN       = "shaman",
-    MAGE         = "mage",
-    WARLOCK      = "warlock",
-    MONK         = "monk",
-    DRUID        = "druid",
-    DEMONHUNTER  = "demonhunter",
-    EVOKER       = "evoker",
+    WARRIOR     = "warrior",
+    PALADIN     = "paladin",
+    HUNTER      = "hunter",
+    ROGUE       = "rogue",
+    PRIEST      = "priest",
+    DEATHKNIGHT = "deathknight",
+    SHAMAN      = "shaman",
+    MAGE        = "mage",
+    WARLOCK     = "warlock",
+    MONK        = "monk",
+    DRUID       = "druid",
+    DEMONHUNTER = "demonhunter",
+    EVOKER      = "evoker",
 }
 SoundSystem.SPECS_SOUND_MAP = {
 
@@ -138,14 +139,13 @@ local function getSoundFileName(type, identity)
     if type == SoundSystem.SOUND_TYPE.DEFAULT then
         return "trinket_default"
     elseif type == SoundSystem.SOUND_TYPE.ROLES then
-         return SoundSystem.ROLES_SOUND_MAP[identity]
+        return SoundSystem.ROLES_SOUND_MAP[identity]
     elseif type == SoundSystem.SOUND_TYPE.SPECS then
-         return SoundSystem.SPECS_SOUND_MAP[identity]
+        return SoundSystem.SPECS_SOUND_MAP[identity]
     elseif type == SoundSystem.SOUND_TYPE.CLASSES then
         return SoundSystem.CLASS_SOUND_MAP[identity]
     end
     return nil
-
 end
 
 -- type: "roles" | "specs" | "classes"
@@ -162,8 +162,7 @@ end
 
 
 function SoundSystem.playTrinketSound(type, identity)
-
-    local selectedSoundChannel = DBUtils.getOptionValue("selectedSoundChannel")
+    local selectedSoundChannel = DBUtils.getOptionValue("selectedSoundChannel") or DEFAULT_SOUND_CHANNEL
 
     local soundFileName = getSoundFileName(type, identity)
     local soundPath = getSoundPath(type, soundFileName)
@@ -174,13 +173,7 @@ function SoundSystem.playTrinketSound(type, identity)
         return
     end
 
-    -- Try playing requested sound
-    local willPlay = PlaySoundFile(soundPath, selectedSoundChannel)
-
-    -- If WoW fails to play it (file missing), fallback
-    if not willPlay then
-        PlaySoundFile(DEFAULT_SOUND_PATH, selectedSoundChannel)
-    end
+    PlaySoundFile(soundPath, selectedSoundChannel)
 end
 
 -- global preview function
@@ -220,7 +213,6 @@ function SoundSystem.playPreviewSound()
 
     SoundSystem.playTrinketSound(selectedType, randomIdentity)
 end
-
 
 function SoundSystem.isChannelEnabled(channelToken)
     local cvar = SOUND_CHANNEL_CVAR[channelToken]
