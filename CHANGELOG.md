@@ -1,3 +1,9 @@
+## Arena Trinket Sound release 2.5.0
+
+### Changes
+
+- Updated interface version for compatibility with the latest game build
+
 ## Arena Trinket Sound release 2.4.1
 
 ### Changes
