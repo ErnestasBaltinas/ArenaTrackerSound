@@ -1,3 +1,9 @@
+## Arena Trinket Sound release 2.6.0
+
+### Changes
+
+- Fixed errors caused by Blizzard API changes in patch 12.1 — class and role detection no longer use APIs that return secret values for arena opponents
+
 ## Arena Trinket Sound release 2.5.0
 
 ### Changes
