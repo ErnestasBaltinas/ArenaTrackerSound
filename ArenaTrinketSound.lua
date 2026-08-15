@@ -4,46 +4,48 @@ local SoundSystem = addon.SoundSystem
 
 local trinketUsedAt = {}
 
+-- Build specID → classFile lookup at load time from static game data.
+-- Avoids calling UnitClass/UnitGroupRolesAssigned on arena units, which return
+-- secret values in 12.1 when the unit's identity is secret.
+local specToClassFile = {}
+for classIndex = 1, GetNumClasses() do
+    local _, classFile, classID = GetClassInfo(classIndex)
+    for specIndex = 1, GetNumSpecializationsForClassID(classID) do
+        local specID = GetSpecializationInfoForClassID(classID, specIndex)
+        specToClassFile[specID] = classFile
+    end
+end
+
 -- utils --
 
 local function getArenaIndex(unit)
     return tonumber(string.match(unit, "^arena(%d+)$"))
 end
 
-
-
 local function getUnitRole(unit)
-    -- Check group-assigned role first
-    local role = UnitGroupRolesAssigned(unit)
-    if role ~= "NONE" then
-        return role
-    end
-
-    -- Fallback to specialization-based role
     local index = getArenaIndex(unit)
-    local specID, _ = GetArenaOpponentSpec(index)
+    local specID = GetArenaOpponentSpec(index)
     if specID then
         local _, _, _, role = GetSpecializationInfoByID(specID)
-        return role
+        return role or "NONE"
     end
     return "NONE"
 end
 
 local function getUnitSpecName(unit)
     local index = getArenaIndex(unit)
-    local specID, _ = GetArenaOpponentSpec(index)
-
+    local specID = GetArenaOpponentSpec(index)
     if not specID then
-        return nil -- sometimes specID is nil, not sure why, seems like a bug
+        return nil
     end
-    local _, specName, _, _, _, _, _ = GetSpecializationInfoByID(specID)
+    local _, specName = GetSpecializationInfoByID(specID)
     return specName -- Balance
 end
 
 local function getUnitClassName(unit)
-    local _, _, classID = UnitClass(unit)
-    local _, classFile, _ = GetClassInfo(classID)
-    return classFile -- DRUID, DEATHKNIGHT, etc.
+    local index = getArenaIndex(unit)
+    local specID = GetArenaOpponentSpec(index)
+    return specID and specToClassFile[specID] -- DRUID, DEATHKNIGHT, etc.
 end
 
 
