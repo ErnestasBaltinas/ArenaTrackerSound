@@ -56,8 +56,12 @@ local function getTypeAndUnitIdentity(unit)
     if selectedType == SoundSystem.SOUND_TYPE.ROLES then
         identity = getUnitRole(unit)
     elseif selectedType == SoundSystem.SOUND_TYPE.SPECS then
-        local spec = getUnitSpecName(unit)   -- e.g., "Restoration"
+        local spec = getUnitSpecName(unit)   -- e.g., "Restoration" (or "Beast Mastery" with a space)
         local class = getUnitClassName(unit) -- e.g., "Druid"
+
+        if spec then
+            spec = spec:gsub("%s+", "") -- e.g., "Beast Mastery" -> "BeastMastery" to match SPECS_SOUND_MAP keys
+        end
 
         if spec and class then
             identity = spec .. "_" .. class -- e.g., "Restoration_Druid"
@@ -117,6 +121,13 @@ end
 
 local function OnArenaTrinketUsed(unit)
     markTrinketUsed(unit)
+
+    if C_PvP.GetActiveMatchState() ~= Enum.PvPMatchState.Engaged then
+        -- Prep room / between rounds: SetCooldown here reflects a CD carried over from the
+        -- previous round, not a real trinket use. Track it for dedup but don't play a sound.
+        return
+    end
+
     local selectedType, identity = getTypeAndUnitIdentity(unit)
     printTrinketUsed(unit, identity)
     SoundSystem.playTrinketSound(selectedType, identity)

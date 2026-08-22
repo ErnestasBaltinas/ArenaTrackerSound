@@ -1,3 +1,10 @@
+## Arena Trinket Sound release 2.6.1
+
+### Changes
+
+- Fixed Beast Mastery Hunter spec sound not playing — the Blizzard spec name "Beast Mastery" contains a space that wasn't stripped before matching against the sound map
+- Fixed enemy trinket sounds sometimes playing in the Solo Shuffle prep room between rounds
+
 ## Arena Trinket Sound release 2.6.0
 
 ### Changes
